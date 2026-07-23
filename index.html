@@ -224,7 +224,7 @@
             gap: 5px;
         }
 
-        /* Tooltip Styling (Matches original dark/light theme seamlessly) */
+        /* Tooltip Styling */
         .tooltip-icon {
             display: inline-flex;
             align-items: center;
@@ -294,6 +294,23 @@
             flex: 1;
             accent-color: var(--accent-color);
             cursor: pointer;
+        }
+
+        /* Inflation Toggle Styling */
+        .inflation-toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
+            padding: 10px 14px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+
+        .inflation-toggle-container label {
+            font-weight: 700;
+            color: var(--text-main);
         }
 
         /* Callout Box Grid for Portfolio Split */
@@ -477,6 +494,26 @@
         .btn-export:hover {
             background-color: var(--accent-hover);
         }
+
+        /* Footer Branding */
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid var(--card-border);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        footer a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -568,6 +605,16 @@
                 <h2>3. Acceleration & Growth Mechanics</h2>
             </div>
             
+            <div class="inflation-toggle-container">
+                <div>
+                    <label for="inflationToggle">Adjust for Inflation (2.5% / yr)
+                        <span class="tooltip-icon" data-tooltip="Shows real purchasing power by stripping away estimated 2.5% annual inflation over your timeline.">ⓘ</span>
+                    </label>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">View totals in Real Purchasing Power vs. Nominal Dollars</p>
+                </div>
+                <input type="checkbox" id="inflationToggle" onchange="syncAndCalculate('infToggle')" style="width: 20px; height: 20px; accent-color: var(--accent-color); cursor: pointer;">
+            </div>
+
             <div class="grid-container">
                 <div class="input-group">
                     <div class="label-row">
@@ -688,6 +735,10 @@
 
     <button class="btn-export" onclick="window.print()">🖨️ Save / Print Wealth Blueprint</button>
 
+    <footer>
+        <p>Learn more core wealth strategies in <a href="https://chadsturgill.github.io/wealth-engine-calculator/" target="_blank">STUFF: The Killer of American Wealth</a></p>
+    </footer>
+
     <div class="chart-modal" id="chartModal">
         <div class="chart-modal-header">
             <h2 id="modalTitle" style="color: var(--text-main);">Chart Fullscreen View</h2>
@@ -720,6 +771,8 @@
 
         const marketReturnInput = document.getElementById('marketReturn');
         const marketReturnSlider = document.getElementById('marketReturnSlider');
+
+        const inflationToggle = document.getElementById('inflationToggle');
 
         const heroBalance = document.getElementById('hero-balance');
         const heroSwr = document.getElementById('hero-swr');
@@ -943,6 +996,8 @@
             let annualDeposit = parseFloat(initialDepositInput.value) || 0;
             const escPct = (parseFloat(escalationPctInput.value) || 0) / 100;
             const returnRate = (parseFloat(marketReturnInput.value) || 0) / 100;
+            const isAdjustedForInflation = inflationToggle.checked;
+            const inflationRate = 0.025; // 2.5% standard inflation
 
             let currentBalance = nestEgg;
             let totalPrincipal = nestEgg;
@@ -961,45 +1016,57 @@
                 totalPrincipal += depositThisYear;
                 currentBalance = (currentBalance + depositThisYear) * (1 + returnRate);
 
-                labels.push(`Age ${age}`);
-                balanceHistory.push(Math.round(currentBalance));
-                principalHistory.push(Math.round(totalPrincipal));
+                // Apply inflation discount factor if toggled on
+                let displayedBalance = currentBalance;
+                let displayedPrincipal = totalPrincipal;
+                if (isAdjustedForInflation) {
+                    let discountFactor = Math.pow(1 + inflationRate, yr);
+                    displayedBalance = currentBalance / discountFactor;
+                    displayedPrincipal = totalPrincipal / discountFactor;
+                }
 
-                milestoneData.push({ age: age, balance: currentBalance });
+                labels.push(`Age ${age}`);
+                balanceHistory.push(Math.round(displayedBalance));
+                principalHistory.push(Math.round(displayedPrincipal));
+
+                milestoneData.push({ age: age, balance: displayedBalance });
 
                 tableHTML += `
                     <tr>
                         <td>${age}</td>
-                        <td>${formatCurrency(depositThisYear)}</td>
-                        <td>${formatCurrency(totalPrincipal)}</td>
-                        <td>${formatCurrency(currentBalance)}</td>
+                        <td>${formatCurrency(isAdjustedForInflation ? depositThisYear / Math.pow(1 + inflationRate, yr) : depositThisYear)}</td>
+                        <td>${formatCurrency(displayedPrincipal)}</td>
+                        <td>${formatCurrency(displayedBalance)}</td>
                     </tr>
                 `;
             }
 
             // Hero Outputs
-            heroBalance.innerText = formatCurrency(currentBalance);
-            let swr4Pct = currentBalance * 0.04;
+            let finalDisplayedBalance = balanceHistory.length > 0 ? balanceHistory[balanceHistory.length - 1] : currentBalance;
+            heroBalance.innerText = formatCurrency(finalDisplayedBalance);
+            let swr4Pct = finalDisplayedBalance * 0.04;
             heroSwr.innerText = `Est. Safe Withdrawal (4%): ${formatCurrency(swr4Pct)} / yr (${formatCurrency(swr4Pct / 12)}/mo)`;
 
             // Table Output
             document.getElementById('scheduleTableBody').innerHTML = tableHTML;
 
             // Update Dynamic Pie Title & Callout Stat Boxes
-            document.getElementById('pieCardTitle').innerText = `Projected Portfolio Split (at Age ${endAge})`;
+            let labelSuffix = isAdjustedForInflation ? ` (at Age ${endAge} - Real Dollars)` : ` (at Age ${endAge})`;
+            document.getElementById('pieCardTitle').innerText = `Projected Portfolio Split${labelSuffix}`;
             
-            let totalGrowth = Math.max(0, currentBalance - totalPrincipal);
-            let principalPct = currentBalance > 0 ? ((totalPrincipal / currentBalance) * 100).toFixed(1) : 0;
-            let growthPct = currentBalance > 0 ? ((totalGrowth / currentBalance) * 100).toFixed(1) : 0;
+            let finalPrincipal = principalHistory.length > 0 ? principalHistory[principalHistory.length - 1] : totalPrincipal;
+            let totalGrowth = Math.max(0, finalDisplayedBalance - finalPrincipal);
+            let principalPct = finalDisplayedBalance > 0 ? ((finalPrincipal / finalDisplayedBalance) * 100).toFixed(1) : 0;
+            let growthPct = finalDisplayedBalance > 0 ? ((totalGrowth / finalDisplayedBalance) * 100).toFixed(1) : 0;
 
-            document.getElementById('pie-principal-val').innerText = formatCurrency(totalPrincipal);
+            document.getElementById('pie-principal-val').innerText = formatCurrency(finalPrincipal);
             document.getElementById('pie-principal-pct').innerText = `${principalPct}% of total`;
 
             document.getElementById('pie-growth-val').innerText = formatCurrency(totalGrowth);
             document.getElementById('pie-growth-pct').innerText = `${growthPct}% of total`;
 
             // Update Dynamic Pie Chart
-            pieChart.data.datasets[0].data = [Math.round(totalPrincipal), Math.round(totalGrowth)];
+            pieChart.data.datasets[0].data = [Math.round(finalPrincipal), Math.round(totalGrowth)];
             pieChart.update();
 
             // Update Line Chart
