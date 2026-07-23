@@ -201,6 +201,7 @@
 
         .input-group {
             margin-bottom: 12px;
+            position: relative;
         }
 
         .input-group:last-child {
@@ -218,6 +219,47 @@
             font-size: 0.8rem;
             color: var(--text-muted);
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Tooltip Styling (Matches original dark/light theme seamlessly) */
+        .tooltip-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 14px;
+            height: 14px;
+            background: var(--card-border);
+            color: var(--text-main);
+            border-radius: 50%;
+            font-size: 0.6rem;
+            font-weight: bold;
+            cursor: help;
+            position: relative;
+        }
+
+        .tooltip-icon:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 130%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card-bg);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: normal;
+            width: 220px;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            line-height: 1.4;
+            text-align: left;
+            border: 1px solid var(--card-border);
+            pointer-events: none;
+            white-space: normal;
         }
 
         .unit-badge {
@@ -465,7 +507,9 @@
             
             <div class="input-group">
                 <div class="label-row">
-                    <label for="currentAge">Current Age</label>
+                    <label for="currentAge">Current Age
+                        <span class="tooltip-icon" data-tooltip="Your starting point on the financial timeline. Time is your ultimate asset; starting early lets compounding work its magic.">ⓘ</span>
+                    </label>
                     <span class="unit-badge" id="currentAgeBadge">22 yrs</span>
                 </div>
                 <div class="input-control">
@@ -476,7 +520,9 @@
 
             <div class="input-group">
                 <div class="label-row">
-                    <label for="retireAge">Target Freedom Age</label>
+                    <label for="retireAge">Target Freedom Age
+                        <span class="tooltip-icon" data-tooltip="The age you plan to achieve financial freedom and step off the performance treadmill permanently.">ⓘ</span>
+                    </label>
                     <span class="unit-badge" id="retireAgeBadge">61 yrs</span>
                 </div>
                 <div class="input-control">
@@ -493,7 +539,9 @@
             
             <div class="input-group">
                 <div class="label-row">
-                    <label for="nestEgg">Current Nest Egg (Retirement $)</label>
+                    <label for="nestEgg">Current Nest Egg (Retirement $)
+                        <span class="tooltip-icon" data-tooltip="Your starting principal capital already invested or saved for your long-term wealth engine.">ⓘ</span>
+                    </label>
                 </div>
                 <div class="input-control">
                     <input type="range" id="nestEggSlider" min="0" max="100000" step="500" value="0">
@@ -503,7 +551,9 @@
 
             <div class="input-group">
                 <div class="label-row">
-                    <label for="initialDeposit">Initial Deposit ($/yr)</label>
+                    <label for="initialDeposit">Initial Deposit ($/yr)
+                        <span class="tooltip-icon" data-tooltip="The baseline amount you consistently feed into your wealth engine every single year.">ⓘ</span>
+                    </label>
                     <span class="unit-badge" id="monthlyEquivBadge">$208/mo</span>
                 </div>
                 <div class="input-control">
@@ -521,7 +571,9 @@
             <div class="grid-container">
                 <div class="input-group">
                     <div class="label-row">
-                        <label for="escalationPct">Annual Contribution Increase (%)</label>
+                        <label for="escalationPct">Annual Contribution Increase (%)
+                            <span class="tooltip-icon" data-tooltip="Your annual percentage escalation rate representing career growth and increased automated savings discipline.">ⓘ</span>
+                        </label>
                     </div>
                     <div class="input-control">
                         <input type="range" id="escalationPctSlider" min="0" max="20" step="0.5" value="5.0">
@@ -531,7 +583,9 @@
 
                 <div class="input-group">
                     <div class="label-row">
-                        <label for="year2Deposit">Year 2 Total Annual Deposit ($)</label>
+                        <label for="year2Deposit">Year 2 Total Annual Deposit ($)
+                            <span class="tooltip-icon" data-tooltip="The calculated total annual contribution for Year 2 based on your escalation rate.">ⓘ</span>
+                        </label>
                     </div>
                     <div class="input-control">
                         <input type="number" id="year2Deposit" value="2625" min="0" style="width: 100%;">
@@ -540,7 +594,9 @@
 
                 <div class="input-group full-width">
                     <div class="label-row">
-                        <label for="marketReturn">Anticipated Annual Return (%)</label>
+                        <label for="marketReturn">Anticipated Annual Return (%)
+                            <span class="tooltip-icon" data-tooltip="The historical average annual compound return (~8.7%) of a low-cost broad-market index fund engine.">ⓘ</span>
+                        </label>
                     </div>
                     <div class="input-control">
                         <input type="range" id="marketReturnSlider" min="1" max="15" step="0.1" value="8.7">
