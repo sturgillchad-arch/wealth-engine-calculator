@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Wealth Engine Calculator</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="WealthEngine">
+    <link rel="apple-touch-icon" href="https://via.placeholder.com/180/0d1117/00ff88?text=WE">
+    
+    <style>
+        /* CSS Variables for Dynamic Dark/Light Theming */
+        :root[data-theme="dark"] {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --card-border: #30363d;
+            --accent-color: #00ff88;
+            --accent-hover: #00cc6a;
+            --text-main: #f0f6fc;
+            --text-muted: #8b949e;
+            --input-bg: #0d1117;
+            --hero-bg: linear-gradient(135deg, #1f293d 0%, #161b22 100%);
+            --grid-line: #30363d;
+            --principal-color: #388bfd;
+            --principal-box-bg: rgba(56, 139, 253, 0.1);
+            --growth-box-bg: rgba(0, 255, 136, 0.1);
+        }
+
+        :root[data-theme="light"] {
+            --bg-color: #f6f8fa;
+            --card-bg: #ffffff;
+            --card-border: #d0d7de;
+            --accent-color: #00a859;
+            --accent-hover: #008f4c;
+            --text-main: #1f2328;
+            --text-muted: #656d76;
+            --input-bg: #f6f8fa;
+            --hero-bg: linear-gradient(135deg, #e6f7ef 0%, #ffffff 100%);
+            --grid-line: #e1e4e8;
+            --principal-color: #0969da;
+            --principal-box-bg: rgba(9, 105, 218, 0.08);
+            --growth-box-bg: rgba(0, 168, 89, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 15px;
+            max-width: 850px;
+            margin: 0 auto;
+            padding-bottom: 50px;
+            position: relative;
+        }
+
+        /* Top Bar & Theme Switcher */
+        .top-bar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+
+        .theme-toggle-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 8px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .theme-toggle-btn:hover {
+            border-color: var(--accent-color);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 10px 0;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--accent-color);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        header p {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .hero-banner {
+            background: var(--hero-bg);
+            border: 2px solid var(--accent-color);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 255, 136, 0.1);
+        }
+
+        .hero-title {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .hero-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            margin: 8px 0;
+        }
+
+        .hero-subtext {
+            font-size: 0.85rem;
+            color: var(--text-main);
+            background: rgba(125, 125, 125, 0.1);
+            padding: 6px 14px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 600;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        @media (min-width: 600px) {
+            .grid-container {
+                grid-template-columns: 1fr 1fr;
+            }
+            .full-width {
+                grid-column: span 2;
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 18px;
+        }
+
+        .card-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 8px;
+        }
+
+        .card h2 {
+            font-size: 1.05rem;
+            color: var(--text-main);
+        }
+
+        .btn-fullscreen {
+            background: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 4px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .btn-fullscreen:hover {
+            color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        .input-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .unit-badge {
+            font-size: 0.75rem;
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .input-control {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input[type="number"] {
+            background-color: var(--input-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            width: 110px;
+            text-align: right;
+            outline: none;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--accent-color);
+        }
+
+        input[type="range"] {
+            flex: 1;
+            accent-color: var(--accent-color);
+            cursor: pointer;
+        }
+
+        /* Callout Box Grid for Portfolio Split */
+        .split-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .stat-box {
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid var(--card-border);
+        }
+
+        .stat-box.principal-box {
+            background-color: var(--principal-box-bg);
+            border-left: 4px solid var(--principal-color);
+        }
+
+        .stat-box.growth-box {
+            background-color: var(--growth-box-bg);
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .stat-pct {
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        .principal-box .stat-pct {
+            color: var(--principal-color);
+        }
+
+        .growth-box .stat-pct {
+            color: var(--accent-color);
+        }
+
+        /* Standalone Full-Width Chart Layouts */
+        .pie-chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 320px;
+            height: 240px;
+            margin: 0 auto;
+        }
+
+        .line-chart-container {
+            position: relative;
+            width: 100%;
+            height: 280px;
+        }
+
+        /* Fullscreen Modal Wrapper */
+        .chart-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--bg-color);
+            z-index: 9999;
+            padding: 20px;
+            flex-direction: column;
+        }
+
+        .chart-modal.active {
+            display: flex;
+        }
+
+        .chart-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .chart-modal-body {
+            flex: 1;
+            position: relative;
+            width: 100%;
+        }
+
+        .milestones-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        @media (min-width: 500px) {
+            .milestones-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .milestone-box {
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .milestone-age {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .milestone-val {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 10px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: right;
+            font-size: 0.8rem;
+        }
+
+        th, td {
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        th {
+            background-color: var(--input-bg);
+            color: var(--text-muted);
+            position: sticky;
+            top: 0;
+        }
+
+        td:first-child, th:first-child {
+            text-align: center;
+        }
+
+        .btn-export {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: var(--accent-color);
+            color: #000;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            margin-top: 15px;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn-export:hover {
+            background-color: var(--accent-hover);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()">
+            <span id="themeIcon">☀️</span> <span id="themeText">Light Mode</span>
+        </button>
+    </div>
+
+    <header>
+        <h1>WEALTH ENGINE</h1>
+        <p>STUFF: The Killer of American Wealth</p>
+    </header>
+
+    <div class="hero-banner">
+        <div class="hero-title">Target Freedom Portfolio</div>
+        <div class="hero-value" id="hero-balance">$0</div>
+        <div class="hero-subtext" id="hero-swr">Est. Safe Withdrawal (4%): $0 / yr</div>
+    </div>
+
+    <div class="grid-container">
+
+        <div class="card">
+            <div class="card-header-row">
+                <h2>1. Timeline Parameters</h2>
+            </div>
+            
+            <div class="input-group">
+                <div class="label-row">
+                    <label for="currentAge">Current Age</label>
+                    <span class="unit-badge" id="currentAgeBadge">22 yrs</span>
+                </div>
+                <div class="input-control">
+                    <input type="range" id="currentAgeSlider" min="18" max="80" value="22">
+                    <input type="number" id="currentAge" value="22" min="18" max="80">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <div class="label-row">
+                    <label for="retireAge">Target Freedom Age</label>
+                    <span class="unit-badge" id="retireAgeBadge">61 yrs</span>
+                </div>
+                <div class="input-control">
+                    <input type="range" id="retireAgeSlider" min="19" max="90" value="61">
+                    <input type="number" id="retireAge" value="61" min="19" max="90">
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header-row">
+                <h2>2. Capital Inputs</h2>
+            </div>
+            
+            <div class="input-group">
+                <div class="label-row">
+                    <label for="nestEgg">Current Nest Egg (Retirement $)</label>
+                </div>
+                <div class="input-control">
+                    <input type="range" id="nestEggSlider" min="0" max="100000" step="500" value="0">
+                    <input type="number" id="nestEgg" value="0" min="0">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <div class="label-row">
+                    <label for="initialDeposit">Initial Deposit ($/yr)</label>
+                    <span class="unit-badge" id="monthlyEquivBadge">$208/mo</span>
+                </div>
+                <div class="input-control">
+                    <input type="range" id="initialDepositSlider" min="500" max="50000" step="250" value="2500">
+                    <input type="number" id="initialDeposit" value="2500" min="0">
+                </div>
+            </div>
+        </div>
+
+        <div class="card full-width">
+            <div class="card-header-row">
+                <h2>3. Acceleration & Growth Mechanics</h2>
+            </div>
+            
+            <div class="grid-container">
+                <div class="input-group">
+                    <div class="label-row">
+                        <label for="escalationPct">Annual Contribution Increase (%)</label>
+                    </div>
+                    <div class="input-control">
+                        <input type="range" id="escalationPctSlider" min="0" max="20" step="0.5" value="5.0">
+                        <input type="number" id="escalationPct" value="5.0" min="0" max="100" step="0.1">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="label-row">
+                        <label for="year2Deposit">Year 2 Total Annual Deposit ($)</label>
+                    </div>
+                    <div class="input-control">
+                        <input type="number" id="year2Deposit" value="2625" min="0" style="width: 100%;">
+                    </div>
+                </div>
+
+                <div class="input-group full-width">
+                    <div class="label-row">
+                        <label for="marketReturn">Anticipated Annual Return (%)</label>
+                    </div>
+                    <div class="input-control">
+                        <input type="range" id="marketReturnSlider" min="1" max="15" step="0.1" value="8.7">
+                        <input type="number" id="marketReturn" value="8.7" min="0" max="30" step="0.1">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card full-width" id="pieCard">
+            <div class="card-header-row">
+                <h2 id="pieCardTitle">Projected Portfolio Split (at Age 61)</h2>
+                <button class="btn-fullscreen" onclick="openFullscreen('pie')">⛶ Fullscreen</button>
+            </div>
+            
+            <div class="split-stats-grid">
+                <div class="stat-box principal-box">
+                    <div class="stat-label">Total Principal Contributed</div>
+                    <div class="stat-value" id="pie-principal-val">$0</div>
+                    <div class="stat-pct" id="pie-principal-pct">0%</div>
+                </div>
+                <div class="stat-box growth-box">
+                    <div class="stat-label">Compound Interest Growth</div>
+                    <div class="stat-value" id="pie-growth-val">$0</div>
+                    <div class="stat-pct" id="pie-growth-pct">0%</div>
+                </div>
+            </div>
+
+            <div class="pie-chart-container" id="pieContainer">
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card full-width" id="lineCard">
+            <div class="card-header-row">
+                <h2>Growth Trajectory</h2>
+                <button class="btn-fullscreen" onclick="openFullscreen('line')">⛶ Fullscreen</button>
+            </div>
+            <div class="line-chart-container" id="lineContainer">
+                <canvas id="lineChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card full-width">
+            <div class="card-header-row">
+                <h2>Trajectory Milestones</h2>
+            </div>
+            <div class="milestones-grid">
+                <div class="milestone-box">
+                    <div class="milestone-age" id="m1-age">Age --</div>
+                    <div class="milestone-val" id="m1-val">$0</div>
+                </div>
+                <div class="milestone-box">
+                    <div class="milestone-age" id="m2-age">Age --</div>
+                    <div class="milestone-val" id="m2-val">$0</div>
+                </div>
+                <div class="milestone-box">
+                    <div class="milestone-age" id="m3-age">Age --</div>
+                    <div class="milestone-val" id="m3-val">$0</div>
+                </div>
+                <div class="milestone-box">
+                    <div class="milestone-age" id="m4-age">Age --</div>
+                    <div class="milestone-val" id="m4-val">$0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card full-width">
+            <div class="card-header-row">
+                <h2>Annual Accumulation Schedule</h2>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Age</th>
+                            <th>Annual Deposit</th>
+                            <th>Total Contributed</th>
+                            <th>Ending Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scheduleTableBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <button class="btn-export" onclick="window.print()">🖨️ Save / Print Wealth Blueprint</button>
+
+    <div class="chart-modal" id="chartModal">
+        <div class="chart-modal-header">
+            <h2 id="modalTitle" style="color: var(--text-main);">Chart Fullscreen View</h2>
+            <button class="btn-fullscreen" style="padding: 8px 16px; font-size: 0.9rem;" onclick="closeFullscreen()">✕ Close</button>
+        </div>
+        <div class="chart-modal-body" id="modalBody"></div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const currentAgeInput = document.getElementById('currentAge');
+        const currentAgeSlider = document.getElementById('currentAgeSlider');
+        const currentAgeBadge = document.getElementById('currentAgeBadge');
+
+        const retireAgeInput = document.getElementById('retireAge');
+        const retireAgeSlider = document.getElementById('retireAgeSlider');
+        const retireAgeBadge = document.getElementById('retireAgeBadge');
+
+        const nestEggInput = document.getElementById('nestEgg');
+        const nestEggSlider = document.getElementById('nestEggSlider');
+
+        const initialDepositInput = document.getElementById('initialDeposit');
+        const initialDepositSlider = document.getElementById('initialDepositSlider');
+        const monthlyEquivBadge = document.getElementById('monthlyEquivBadge');
+
+        const escalationPctInput = document.getElementById('escalationPct');
+        const escalationPctSlider = document.getElementById('escalationPctSlider');
+
+        const year2DepositInput = document.getElementById('year2Deposit');
+
+        const marketReturnInput = document.getElementById('marketReturn');
+        const marketReturnSlider = document.getElementById('marketReturnSlider');
+
+        const heroBalance = document.getElementById('hero-balance');
+        const heroSwr = document.getElementById('hero-swr');
+
+        // Dynamic Chart Handles
+        let pieChart = null;
+        let lineChart = null;
+
+        // Theme Toggle Functionality
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+
+            document.getElementById('themeIcon').innerText = newTheme === 'dark' ? '☀️' : '🌙';
+            document.getElementById('themeText').innerText = newTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
+
+            updateChartColors();
+        }
+
+        function getStyleColor(prop) {
+            return getComputedStyle(document.documentElement).getPropertyValue(prop).trim();
+        }
+
+        // Initialize Charts
+        function initCharts() {
+            const textColor = getStyleColor('--text-main');
+            const accentColor = getStyleColor('--accent-color');
+            const principalColor = getStyleColor('--principal-color');
+
+            // Pie Chart
+            const ctxPie = document.getElementById('pieChart').getContext('2d');
+            pieChart = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Total Principal', 'Compound Growth'],
+                    datasets: [{
+                        data: [0, 0],
+                        backgroundColor: [principalColor, accentColor],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: textColor, font: { size: 12, weight: 'bold' } }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+
+            // Line Chart
+            const ctxLine = document.getElementById('lineChart').getContext('2d');
+            lineChart = new Chart(ctxLine, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Portfolio Balance',
+                            data: [],
+                            borderColor: accentColor,
+                            backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Total Principal',
+                            data: [],
+                            borderColor: principalColor,
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: textColor, font: { size: 11, weight: 'bold' } }
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { color: getStyleColor('--text-muted') }, grid: { color: getStyleColor('--grid-line') } },
+                        y: { ticks: { color: getStyleColor('--text-muted') }, grid: { color: getStyleColor('--grid-line') } }
+                    }
+                }
+            });
+        }
+
+        function updateChartColors() {
+            if (!pieChart || !lineChart) return;
+
+            const textColor = getStyleColor('--text-main');
+            const mutedColor = getStyleColor('--text-muted');
+            const gridColor = getStyleColor('--grid-line');
+            const accentColor = getStyleColor('--accent-color');
+            const principalColor = getStyleColor('--principal-color');
+
+            pieChart.data.datasets[0].backgroundColor = [principalColor, accentColor];
+            pieChart.options.plugins.legend.labels.color = textColor;
+            pieChart.update();
+
+            lineChart.data.datasets[0].borderColor = accentColor;
+            lineChart.data.datasets[1].borderColor = principalColor;
+            lineChart.options.plugins.legend.labels.color = textColor;
+            lineChart.options.scales.x.ticks.color = mutedColor;
+            lineChart.options.scales.x.grid.color = gridColor;
+            lineChart.options.scales.y.ticks.color = mutedColor;
+            lineChart.options.scales.y.grid.color = gridColor;
+            lineChart.update();
+        }
+
+        // Fullscreen Modal Toggle Mechanics
+        let activeFullscreenType = null;
+
+        function openFullscreen(type) {
+            activeFullscreenType = type;
+            const modal = document.getElementById('chartModal');
+            const modalBody = document.getElementById('modalBody');
+            const modalTitle = document.getElementById('modalTitle');
+
+            if (type === 'pie') {
+                modalTitle.innerText = "Projected Portfolio Split (Fullscreen)";
+                modalBody.appendChild(document.getElementById('pieChart'));
+            } else {
+                modalTitle.innerText = "Growth Trajectory (Fullscreen)";
+                modalBody.appendChild(document.getElementById('lineChart'));
+            }
+
+            modal.classList.add('active');
+            if (type === 'pie') pieChart.resize();
+            if (type === 'line') lineChart.resize();
+        }
+
+        function closeFullscreen() {
+            const modal = document.getElementById('chartModal');
+            modal.classList.remove('active');
+
+            if (activeFullscreenType === 'pie') {
+                document.getElementById('pieContainer').appendChild(document.getElementById('pieChart'));
+                pieChart.resize();
+            } else if (activeFullscreenType === 'line') {
+                document.getElementById('lineContainer').appendChild(document.getElementById('lineChart'));
+                lineChart.resize();
+            }
+            activeFullscreenType = null;
+        }
+
+        // Helper: Format Currency
+        function formatCurrency(val) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val);
+        }
+
+        // Sync inputs and recalculate
+        function syncAndCalculate(source) {
+            let cAge = parseInt(currentAgeInput.value) || 22;
+            let rAge = parseInt(retireAgeInput.value) || 61;
+
+            if (cAge >= rAge) {
+                rAge = cAge + 1;
+                retireAgeInput.value = rAge;
+                retireAgeSlider.value = rAge;
+            }
+
+            if (source === 'cAgeSlider') currentAgeInput.value = currentAgeSlider.value;
+            if (source === 'cAgeInput') currentAgeSlider.value = currentAgeInput.value;
+
+            if (source === 'rAgeSlider') retireAgeInput.value = retireAgeSlider.value;
+            if (source === 'rAgeInput') retireAgeSlider.value = retireAgeInput.value;
+
+            if (source === 'nestEggSlider') nestEggInput.value = nestEggSlider.value;
+            if (source === 'nestEggInput') nestEggSlider.value = nestEggInput.value;
+
+            if (source === 'initDepSlider') initialDepositInput.value = initialDepositSlider.value;
+            if (source === 'initDepInput') initialDepositSlider.value = initialDepositInput.value;
+
+            if (source === 'escPctSlider') escalationPctInput.value = escalationPctSlider.value;
+            if (source === 'escPctInput') escalationPctSlider.value = escalationPctInput.value;
+
+            if (source === 'retSlider') marketReturnInput.value = marketReturnSlider.value;
+            if (source === 'retInput') marketReturnSlider.value = marketReturnInput.value;
+
+            // Bi-Directional Logic for Year 2 Deposit vs Escalation %
+            let initDep = parseFloat(initialDepositInput.value) || 0;
+            if (source === 'year2Input') {
+                let y2Val = parseFloat(year2DepositInput.value) || 0;
+                if (initDep > 0 && y2Val >= initDep) {
+                    let calcPct = ((y2Val - initDep) / initDep) * 100;
+                    escalationPctInput.value = calcPct.toFixed(1);
+                    escalationPctSlider.value = calcPct.toFixed(1);
+                }
+            } else {
+                let escPct = parseFloat(escalationPctInput.value) || 0;
+                let calculatedY2 = initDep * (1 + escPct / 100);
+                year2DepositInput.value = Math.round(calculatedY2);
+            }
+
+            // Update Badges
+            currentAgeBadge.innerText = `${currentAgeInput.value} yrs`;
+            retireAgeBadge.innerText = `${retireAgeInput.value} yrs`;
+            monthlyEquivBadge.innerText = `${formatCurrency((parseFloat(initialDepositInput.value) || 0) / 12)}/mo`;
+
+            calculateEngine();
+        }
+
+        // Calculation Engine
+        function calculateEngine() {
+            const startAge = parseInt(currentAgeInput.value) || 22;
+            const endAge = parseInt(retireAgeInput.value) || 61;
+            const duration = endAge - startAge;
+
+            let nestEgg = parseFloat(nestEggInput.value) || 0;
+            let annualDeposit = parseFloat(initialDepositInput.value) || 0;
+            const escPct = (parseFloat(escalationPctInput.value) || 0) / 100;
+            const returnRate = (parseFloat(marketReturnInput.value) || 0) / 100;
+
+            let currentBalance = nestEgg;
+            let totalPrincipal = nestEgg;
+
+            let labels = [];
+            let balanceHistory = [];
+            let principalHistory = [];
+            let tableHTML = '';
+
+            let milestoneData = [];
+
+            for (let yr = 1; yr <= duration; yr++) {
+                let age = startAge + yr;
+                let depositThisYear = yr === 1 ? annualDeposit : annualDeposit * Math.pow(1 + escPct, yr - 1);
+                
+                totalPrincipal += depositThisYear;
+                currentBalance = (currentBalance + depositThisYear) * (1 + returnRate);
+
+                labels.push(`Age ${age}`);
+                balanceHistory.push(Math.round(currentBalance));
+                principalHistory.push(Math.round(totalPrincipal));
+
+                milestoneData.push({ age: age, balance: currentBalance });
+
+                tableHTML += `
+                    <tr>
+                        <td>${age}</td>
+                        <td>${formatCurrency(depositThisYear)}</td>
+                        <td>${formatCurrency(totalPrincipal)}</td>
+                        <td>${formatCurrency(currentBalance)}</td>
+                    </tr>
+                `;
+            }
+
+            // Hero Outputs
+            heroBalance.innerText = formatCurrency(currentBalance);
+            let swr4Pct = currentBalance * 0.04;
+            heroSwr.innerText = `Est. Safe Withdrawal (4%): ${formatCurrency(swr4Pct)} / yr (${formatCurrency(swr4Pct / 12)}/mo)`;
+
+            // Table Output
+            document.getElementById('scheduleTableBody').innerHTML = tableHTML;
+
+            // Update Dynamic Pie Title & Callout Stat Boxes
+            document.getElementById('pieCardTitle').innerText = `Projected Portfolio Split (at Age ${endAge})`;
+            
+            let totalGrowth = Math.max(0, currentBalance - totalPrincipal);
+            let principalPct = currentBalance > 0 ? ((totalPrincipal / currentBalance) * 100).toFixed(1) : 0;
+            let growthPct = currentBalance > 0 ? ((totalGrowth / currentBalance) * 100).toFixed(1) : 0;
+
+            document.getElementById('pie-principal-val').innerText = formatCurrency(totalPrincipal);
+            document.getElementById('pie-principal-pct').innerText = `${principalPct}% of total`;
+
+            document.getElementById('pie-growth-val').innerText = formatCurrency(totalGrowth);
+            document.getElementById('pie-growth-pct').innerText = `${growthPct}% of total`;
+
+            // Update Dynamic Pie Chart
+            pieChart.data.datasets[0].data = [Math.round(totalPrincipal), Math.round(totalGrowth)];
+            pieChart.update();
+
+            // Update Line Chart
+            lineChart.data.labels = labels;
+            lineChart.data.datasets[0].data = balanceHistory;
+            lineChart.data.datasets[1].data = principalHistory;
+            lineChart.update();
+
+            // Dynamic Proportional Milestones
+            if (milestoneData.length > 0) {
+                let idx1 = Math.floor(duration * 0.25) - 1;
+                let idx2 = Math.floor(duration * 0.50) - 1;
+                let idx3 = Math.floor(duration * 0.75) - 1;
+                let idx4 = duration - 1;
+
+                idx1 = Math.max(0, idx1);
+                idx2 = Math.max(0, idx2);
+                idx3 = Math.max(0, idx3);
+
+                document.getElementById('m1-age').innerText = `Age ${milestoneData[idx1].age}`;
+                document.getElementById('m1-val').innerText = formatCurrency(milestoneData[idx1].balance);
+
+                document.getElementById('m2-age').innerText = `Age ${milestoneData[idx2].age}`;
+                document.getElementById('m2-val').innerText = formatCurrency(milestoneData[idx2].balance);
+
+                document.getElementById('m3-age').innerText = `Age ${milestoneData[idx3].age}`;
+                document.getElementById('m3-val').innerText = formatCurrency(milestoneData[idx3].balance);
+
+                document.getElementById('m4-age').innerText = `Age ${milestoneData[idx4].age}`;
+                document.getElementById('m4-val').innerText = formatCurrency(milestoneData[idx4].balance);
+            }
+        }
+
+        // Event Listeners
+        currentAgeSlider.addEventListener('input', () => syncAndCalculate('cAgeSlider'));
+        currentAgeInput.addEventListener('input', () => syncAndCalculate('cAgeInput'));
+
+        retireAgeSlider.addEventListener('input', () => syncAndCalculate('rAgeSlider'));
+        retireAgeInput.addEventListener('input', () => syncAndCalculate('rAgeInput'));
+
+        nestEggSlider.addEventListener('input', () => syncAndCalculate('nestEggSlider'));
+        nestEggInput.addEventListener('input', () => syncAndCalculate('nestEggInput'));
+
+        initialDepositSlider.addEventListener('input', () => syncAndCalculate('initDepSlider'));
+        initialDepositInput.addEventListener('input', () => syncAndCalculate('initDepInput'));
+
+        escalationPctSlider.addEventListener('input', () => syncAndCalculate('escPctSlider'));
+        escalationPctInput.addEventListener('input', () => syncAndCalculate('escPctInput'));
+
+        year2DepositInput.addEventListener('input', () => syncAndCalculate('year2Input'));
+
+        marketReturnSlider.addEventListener('input', () => syncAndCalculate('retSlider'));
+        marketReturnInput.addEventListener('input', () => syncAndCalculate('retInput'));
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            syncAndCalculate('init');
+        });
+    </script>
+</body>
+</html>
