@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wealth Engine Calculator | STUFF: The Killer of American Wealth</title>
+    <title>Wealth Engine Calculator</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -125,7 +125,7 @@
             gap: 6px;
         }
 
-        /* Tooltip Styling */
+        /* Clean Tooltip Styling */
         .tooltip-icon {
             display: inline-flex;
             align-items: center;
@@ -245,7 +245,7 @@
                 <div class="input-group">
                     <div class="label-row">
                         <label for="currentAge">Current Age
-                            <span class="tooltip-icon" data-tooltip="Your starting age on the timeline. Time is your ultimate asset; starting early lets compounding work its magic.">ⓘ</span>
+                            <span class="tooltip-icon" data-tooltip="Your starting point on the financial timeline. Time is your ultimate asset; starting early lets compounding work its magic.">ⓘ</span>
                         </label>
                     </div>
                     <input type="number" id="currentAge" value="22" min="1" max="100" oninput="calculateWealth()">
@@ -254,7 +254,7 @@
                 <div class="input-group">
                     <div class="label-row">
                         <label for="targetAge">Target Freedom Age
-                            <span class="tooltip-icon" data-tooltip="The age you plan to achieve financial freedom and step off the performance treadmill.">ⓘ</span>
+                            <span class="tooltip-icon" data-tooltip="The age you plan to achieve financial freedom and step off the performance treadmill permanently.">ⓘ</span>
                         </label>
                     </div>
                     <input type="number" id="targetAge" value="61" min="1" max="100" oninput="calculateWealth()">
@@ -272,7 +272,7 @@
                 <div class="input-group">
                     <div class="label-row">
                         <label for="annualContribution">Initial Annual Contribution ($)
-                            <span class="tooltip-icon" data-tooltip="The total amount you consistently feed into your wealth engine every single year.">ⓘ</span>
+                            <span class="tooltip-icon" data-tooltip="The baseline amount you consistently feed into your wealth engine every single year.">ⓘ</span>
                         </label>
                     </div>
                     <input type="number" id="annualContribution" value="2500" step="500" oninput="calculateWealth()">
@@ -281,7 +281,7 @@
                 <div class="input-group">
                     <div class="label-row">
                         <label for="annualIncrease">Annual Contribution Increase (%)
-                            <span class="tooltip-icon" data-tooltip="Your annual percentage escalation rate (e.g., 5%) representing career growth and increased automated savings discipline.">ⓘ</span>
+                            <span class="tooltip-icon" data-tooltip="Your annual percentage escalation rate representing career growth and increased automated savings discipline.">ⓘ</span>
                         </label>
                     </div>
                     <input type="number" id="annualIncrease" value="5" step="0.5" oninput="calculateWealth()">
@@ -360,7 +360,6 @@
             let currentContribution = annualContribution;
 
             for (let i = 1; i <= years; i++) {
-                // Add contribution at start or end of year (standard year-end growth model)
                 balance = (balance + currentContribution) * (1 + annualReturn);
                 totalPrincipal += currentContribution;
 
@@ -368,7 +367,6 @@
                 balances.push(Math.round(balance));
                 principals.push(Math.round(totalPrincipal));
 
-                // Scale contribution for next year
                 currentContribution *= (1 + annualIncrease);
             }
 
@@ -448,7 +446,6 @@
             });
         }
 
-        // Run initial calculation on load
         window.onload = calculateWealth;
     </script>
 </body>
