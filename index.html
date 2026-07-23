@@ -560,11 +560,11 @@
                     <label for="retireAge">Target Freedom Age
                         <span class="tooltip-icon" data-tooltip="The age you plan to achieve financial freedom and step off the performance treadmill permanently.">ⓘ</span>
                     </label>
-                    <span class="unit-badge" id="retireAgeBadge">61 yrs</span>
+                    <span class="unit-badge" id="retireAgeBadge">62 yrs</span>
                 </div>
                 <div class="input-control">
-                    <input type="range" id="retireAgeSlider" min="19" max="90" value="61">
-                    <input type="number" id="retireAge" value="61" min="19" max="90">
+                    <input type="range" id="retireAgeSlider" min="19" max="90" value="62">
+                    <input type="number" id="retireAge" value="62" min="19" max="90">
                 </div>
             </div>
         </div>
@@ -655,7 +655,7 @@
 
         <div class="card full-width" id="pieCard">
             <div class="card-header-row">
-                <h2 id="pieCardTitle">Projected Portfolio Split (at Age 61)</h2>
+                <h2 id="pieCardTitle">Projected Portfolio Split (at Age 62)</h2>
                 <button class="btn-fullscreen" onclick="openFullscreen('pie')">⛶ Fullscreen</button>
             </div>
             
@@ -736,7 +736,7 @@
     <button class="btn-export" onclick="window.print()">🖨️ Save / Print Wealth Blueprint</button>
 
     <footer>
-        <p>Learn more core wealth strategies in <a href="https://chadsturgill.github.io/wealth-engine-calculator/" target="_blank">STUFF: The Killer of American Wealth</a></p>
+        <p>Learn more core wealth strategies in <a href="https://sturgillchad-arch.github.io/wealth-engine-calculator/" target="_blank">STUFF: The Killer of American Wealth</a></p>
     </footer>
 
     <div class="chart-modal" id="chartModal">
@@ -937,7 +937,7 @@
         // Sync inputs and recalculate
         function syncAndCalculate(source) {
             let cAge = parseInt(currentAgeInput.value) || 22;
-            let rAge = parseInt(retireAgeInput.value) || 61;
+            let rAge = parseInt(retireAgeInput.value) || 62;
 
             if (cAge >= rAge) {
                 rAge = cAge + 1;
@@ -989,7 +989,7 @@
         // Calculation Engine
         function calculateEngine() {
             const startAge = parseInt(currentAgeInput.value) || 22;
-            const endAge = parseInt(retireAgeInput.value) || 61;
+            const endAge = parseInt(retireAgeInput.value) || 62;
             const duration = endAge - startAge;
 
             let nestEgg = parseFloat(nestEggInput.value) || 0;
