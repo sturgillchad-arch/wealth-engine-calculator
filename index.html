@@ -1207,23 +1207,23 @@
             currentScheduleData = [];
             let milestoneData = [];
 
-            // Include Starting Baseline Row for Current Age & Nest Egg
-            let displayedStartNestEgg = nestEgg;
+            // Baseline Row (Current Age & Starting Nest Egg)
             tableHTML += `
                 <tr>
                     <td><strong>${startAge} (Start)</strong></td>
                     <td>-</td>
-                    <td>${formatCurrency(displayedStartNestEgg)}</td>
-                    <td>${formatCurrency(displayedStartNestEgg)}</td>
+                    <td>${formatCurrency(nestEgg)}</td>
+                    <td>${formatCurrency(nestEgg)}</td>
                 </tr>
             `;
             currentScheduleData.push({
                 age: startAge,
                 deposit: 0,
-                principal: Math.round(displayedStartNestEgg),
-                balance: Math.round(displayedStartNestEgg)
+                principal: Math.round(nestEgg),
+                balance: Math.round(nestEgg)
             });
 
+            // Active Compounding Years
             for (let yr = 1; yr <= duration; yr++) {
                 let age = startAge + yr;
                 let depositThisYear = yr === 1 ? annualDeposit : annualDeposit * Math.pow(1 + escPct, yr - 1);
