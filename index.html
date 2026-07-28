@@ -300,6 +300,19 @@
             cursor: pointer;
         }
 
+        /* Readout Display Box Styling */
+        .readout-box {
+            background-color: var(--input-bg);
+            border: 1px solid var(--card-border);
+            color: var(--accent-color);
+            padding: 9px 12px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 800;
+            width: 100%;
+            text-align: right;
+        }
+
         /* Inflation Toggle Styling */
         .inflation-toggle-container {
             display: flex;
@@ -733,12 +746,12 @@
 
                 <div class="input-group">
                     <div class="label-row">
-                        <label for="year2Deposit">Year 2 Total Annual Deposit ($)
-                            <span class="tooltip-icon" data-tooltip="The calculated total annual contribution for Year 2 based on your initial savings rate and escalation rate.">ⓘ</span>
+                        <label>Initial Annual Deposit ($/yr)
+                            <span class="tooltip-icon" data-tooltip="The starting baseline contribution automatically linked to your Gross Income and Savings Rate in Container 2.">ⓘ</span>
                         </label>
                     </div>
-                    <div class="input-control">
-                        <input type="number" id="year2Deposit" value="7875" min="0" style="width: 100%;">
+                    <div class="input-control" style="width: 100%;">
+                        <div class="readout-box" id="initialDepositReadout">$7,500</div>
                     </div>
                 </div>
 
@@ -886,13 +899,12 @@
         const savingsRateInput = document.getElementById('savingsRate');
         const savingsRateSlider = document.getElementById('savingsRateSlider');
         const annualDepositOutput = document.getElementById('annualDepositOutput');
+        const initialDepositReadout = document.getElementById('initialDepositReadout');
 
         const nestEggInput = document.getElementById('nestEgg');
 
         const escalationPctInput = document.getElementById('escalationPct');
         const escalationPctSlider = document.getElementById('escalationPctSlider');
-
-        const year2DepositInput = document.getElementById('year2Deposit');
 
         const marketReturnInput = document.getElementById('marketReturn');
         const marketReturnSlider = document.getElementById('marketReturnSlider');
@@ -1158,20 +1170,7 @@
             let calculatedDeposit = income * (rate / 100);
             
             annualDepositOutput.innerText = `${formatCurrency(calculatedDeposit)} / yr`;
-
-            // Bi-Directional Logic for Year 2 Deposit vs Escalation % (Linked to Savings Rate)
-            if (source === 'year2Input') {
-                let y2Val = parseFloat(year2DepositInput.value) || 0;
-                if (calculatedDeposit > 0 && y2Val >= calculatedDeposit) {
-                    let calcPct = ((y2Val - calculatedDeposit) / calculatedDeposit) * 100;
-                    escalationPctInput.value = calcPct.toFixed(1);
-                    escalationPctSlider.value = calcPct.toFixed(1);
-                }
-            } else {
-                let escPct = parseFloat(escalationPctInput.value) || 0;
-                let calculatedY2 = calculatedDeposit * (1 + escPct / 100);
-                year2DepositInput.value = Math.round(calculatedY2);
-            }
+            initialDepositReadout.innerText = formatCurrency(calculatedDeposit);
 
             // Update Badges
             currentAgeBadge.innerText = `${currentAgeInput.value} yrs`;
@@ -1334,8 +1333,6 @@
 
         escalationPctSlider.addEventListener('input', () => syncAndCalculate('escPctSlider'));
         escalationPctInput.addEventListener('input', () => syncAndCalculate('escPctInput'));
-
-        year2DepositInput.addEventListener('input', () => syncAndCalculate('year2Input'));
 
         marketReturnSlider.addEventListener('input', () => syncAndCalculate('retSlider'));
         marketReturnInput.addEventListener('input', () => syncAndCalculate('retInput'));
