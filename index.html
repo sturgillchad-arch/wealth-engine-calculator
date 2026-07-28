@@ -167,6 +167,9 @@
             border: 1px solid var(--card-border);
             border-radius: 10px;
             padding: 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .card-header-row {
@@ -534,6 +537,14 @@
         footer a:hover {
             text-decoration: underline;
         }
+
+        /* Print Stylesheet Optimization */
+        @media print {
+            body { background: white; color: black; padding: 0; }
+            .top-bar, .theme-toggle-btn, .btn-export, .btn-csv, .btn-fullscreen, input[type="range"] { display: none !important; }
+            .card { border: 1px solid #ccc; break-inside: avoid; box-shadow: none; margin-bottom: 15px; }
+            .hero-banner { border: 2px solid #000; background: #f9f9f9 !important; box-shadow: none; }
+        }
     </style>
 </head>
 <body>
@@ -596,13 +607,12 @@
             
             <div class="input-group">
                 <div class="label-row">
-                    <label for="nestEgg">Current Nest Egg (Retirement $)
+                    <label for="nestEgg">Current Nest Egg ($)
                         <span class="tooltip-icon" data-tooltip="Your starting principal capital already invested or saved for your long-term wealth engine.">ⓘ</span>
                     </label>
                 </div>
                 <div class="input-control">
-                    <input type="range" id="nestEggSlider" min="0" max="100000" step="500" value="0">
-                    <input type="number" id="nestEgg" value="0" min="0">
+                    <input type="number" id="nestEgg" value="0" min="0" style="width: 100%;">
                 </div>
             </div>
 
@@ -769,7 +779,7 @@
     </div>
 
     <script>
-        // Force Light Mode on load to override any browser caching
+        // Force Light Mode on load
         document.documentElement.setAttribute('data-theme', 'light');
 
         // DOM Elements
@@ -782,7 +792,6 @@
         const retireAgeBadge = document.getElementById('retireAgeBadge');
 
         const nestEggInput = document.getElementById('nestEgg');
-        const nestEggSlider = document.getElementById('nestEggSlider');
 
         const initialDepositInput = document.getElementById('initialDeposit');
         const initialDepositSlider = document.getElementById('initialDepositSlider');
@@ -807,6 +816,44 @@
 
         // Global dataset for CSV Export
         let currentScheduleData = [];
+
+        // Load URL Parameters or Local Storage if present
+        function loadSavedState() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('age')) currentAgeInput.value = urlParams.get('age');
+            else if (localStorage.getItem('we_age')) currentAgeInput.value = localStorage.getItem('we_age');
+
+            if (urlParams.has('retire')) retireAgeInput.value = urlParams.get('retire');
+            else if (localStorage.getItem('we_retire')) retireAgeInput.value = localStorage.getItem('we_retire');
+
+            if (urlParams.has('nest')) nestEggInput.value = urlParams.get('nest');
+            else if (localStorage.getItem('we_nest')) nestEggInput.value = localStorage.getItem('we_nest');
+
+            if (urlParams.has('deposit')) initialDepositInput.value = urlParams.get('deposit');
+            else if (localStorage.getItem('we_deposit')) initialDepositInput.value = localStorage.getItem('we_deposit');
+
+            if (urlParams.has('escalation')) escalationPctInput.value = urlParams.get('escalation');
+            else if (localStorage.getItem('we_escalation')) escalationPctInput.value = localStorage.getItem('we_escalation');
+
+            if (urlParams.has('return')) marketReturnInput.value = urlParams.get('return');
+            else if (localStorage.getItem('we_return')) marketReturnInput.value = localStorage.getItem('we_return');
+
+            // Sync sliders to inputs
+            currentAgeSlider.value = currentAgeInput.value;
+            retireAgeSlider.value = retireAgeInput.value;
+            initialDepositSlider.value = initialDepositInput.value;
+            escalationPctSlider.value = escalationPctInput.value;
+            marketReturnSlider.value = marketReturnInput.value;
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('we_age', currentAgeInput.value);
+            localStorage.setItem('we_retire', retireAgeInput.value);
+            localStorage.setItem('we_nest', nestEggInput.value);
+            localStorage.setItem('we_deposit', initialDepositInput.value);
+            localStorage.setItem('we_escalation', escalationPctInput.value);
+            localStorage.setItem('we_return', marketReturnInput.value);
+        }
 
         // Theme Toggle Functionality
         function toggleTheme() {
@@ -996,9 +1043,6 @@
             if (source === 'rAgeSlider') retireAgeInput.value = retireAgeSlider.value;
             if (source === 'rAgeInput') retireAgeSlider.value = retireAgeInput.value;
 
-            if (source === 'nestEggSlider') nestEggInput.value = nestEggSlider.value;
-            if (source === 'nestEggInput') nestEggSlider.value = nestEggInput.value;
-
             if (source === 'initDepSlider') initialDepositInput.value = initialDepositSlider.value;
             if (source === 'initDepInput') initialDepositSlider.value = initialDepositInput.value;
 
@@ -1028,6 +1072,7 @@
             retireAgeBadge.innerText = `${retireAgeInput.value} yrs`;
             monthlyEquivBadge.innerText = `${formatCurrency((parseFloat(initialDepositInput.value) || 0) / 12)}/mo`;
 
+            saveToLocalStorage();
             calculateEngine();
         }
 
@@ -1097,11 +1142,12 @@
                 `;
             }
 
-            // Hero Outputs
+            // Hero Outputs & Story-Driven Subtext
             let finalDisplayedBalance = balanceHistory.length > 0 ? balanceHistory[balanceHistory.length - 1] : currentBalance;
             heroBalance.innerText = formatCurrency(finalDisplayedBalance);
             let swr4Pct = finalDisplayedBalance * 0.04;
-            heroSwr.innerText = `Est. Safe Withdrawal (4%): ${formatCurrency(swr4Pct)} / yr (${formatCurrency(swr4Pct / 12)}/mo)`;
+            let monthlyFreedom = formatCurrency(swr4Pct / 12);
+            heroSwr.innerText = `Your starting habit + ${Math.round(escPct*100)}% escalation becomes ${formatCurrency(finalDisplayedBalance)} by Age ${endAge} — ${monthlyFreedom}/mo of freedom`;
 
             // Table Output
             document.getElementById('scheduleTableBody').innerHTML = tableHTML;
@@ -1163,7 +1209,6 @@
         retireAgeSlider.addEventListener('input', () => syncAndCalculate('rAgeSlider'));
         retireAgeInput.addEventListener('input', () => syncAndCalculate('rAgeInput'));
 
-        nestEggSlider.addEventListener('input', () => syncAndCalculate('nestEggSlider'));
         nestEggInput.addEventListener('input', () => syncAndCalculate('nestEggInput'));
 
         initialDepositSlider.addEventListener('input', () => syncAndCalculate('initDepSlider'));
@@ -1177,8 +1222,9 @@
         marketReturnSlider.addEventListener('input', () => syncAndCalculate('retSlider'));
         marketReturnInput.addEventListener('input', () => syncAndCalculate('retInput'));
 
-        // Initialize App
+        // Initialize App with Local Storage & URL support
         window.addEventListener('DOMContentLoaded', () => {
+            loadSavedState();
             initCharts();
             syncAndCalculate('init');
         });
