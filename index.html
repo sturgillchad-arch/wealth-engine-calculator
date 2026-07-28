@@ -145,6 +145,7 @@
             border-radius: 20px;
             display: inline-block;
             font-weight: 600;
+            line-height: 1.4;
         }
 
         .grid-container {
@@ -563,11 +564,12 @@
     <div class="hero-banner">
         <div class="hero-title">Target Freedom Portfolio</div>
         <div class="hero-value" id="hero-balance">$0</div>
-        <div class="hero-subtext" id="hero-swr">Est. Safe Withdrawal (4%): $0 / yr</div>
+        <div class="hero-subtext" id="hero-swr">Loading wealth engine projections...</div>
     </div>
 
     <div class="grid-container">
 
+        <!-- Card 1: Timeline Parameters -->
         <div class="card">
             <div class="card-header-row">
                 <h2>1. Timeline Parameters</h2>
@@ -600,41 +602,44 @@
             </div>
         </div>
 
+        <!-- Card 2: Income & Savings Rate Engine -->
         <div class="card">
             <div class="card-header-row">
-                <h2>2. Capital Inputs</h2>
+                <h2>2. Income & Savings Rate</h2>
             </div>
             
             <div class="input-group">
                 <div class="label-row">
-                    <label for="nestEgg">Current Nest Egg ($)
-                        <span class="tooltip-icon" data-tooltip="Your starting principal capital already invested or saved for your long-term wealth engine.">ⓘ</span>
+                    <label for="grossIncome">Household Gross Income ($)
+                        <span class="tooltip-icon" data-tooltip="Your total annual household earnings before taxes, serving as your baseline mirror of transparency.">ⓘ</span>
                     </label>
                 </div>
                 <div class="input-control">
-                    <input type="number" id="nestEgg" value="0" min="0" style="width: 100%;">
+                    <input type="number" id="grossIncome" value="75000" min="0" step="1000" style="width: 100%;">
                 </div>
             </div>
 
             <div class="input-group">
                 <div class="label-row">
-                    <label for="initialDeposit">Initial Deposit ($/yr)
-                        <span class="tooltip-icon" data-tooltip="The baseline amount you consistently feed into your wealth engine every single year.">ⓘ</span>
+                    <label for="savingsRate">Retirement Savings Rate (%)
+                        <span class="tooltip-icon" data-tooltip="The percentage of your gross income you commit to feeding your wealth engine every year.">ⓘ</span>
                     </label>
-                    <span class="unit-badge" id="monthlyEquivBadge">$208/mo</span>
+                    <span class="unit-badge" id="annualDepositOutput">$7,500 / yr</span>
                 </div>
                 <div class="input-control">
-                    <input type="range" id="initialDepositSlider" min="500" max="50000" step="250" value="2500">
-                    <input type="number" id="initialDeposit" value="2500" min="0">
+                    <input type="range" id="savingsRateSlider" min="1" max="50" step="0.5" value="10">
+                    <input type="number" id="savingsRate" value="10" min="0" max="100" step="0.5">
                 </div>
             </div>
         </div>
 
+        <!-- Card 3: Acceleration & Growth Mechanics -->
         <div class="card full-width">
             <div class="card-header-row">
                 <h2>3. Acceleration & Growth Mechanics</h2>
             </div>
             
+            <!-- Inflation Toggle Enhancement -->
             <div class="inflation-toggle-container">
                 <div>
                     <label for="inflationToggle">Adjust for Inflation (2.5% / yr)
@@ -646,6 +651,17 @@
             </div>
 
             <div class="grid-container">
+                <div class="input-group">
+                    <div class="label-row">
+                        <label for="nestEgg">Current Nest Egg ($)
+                            <span class="tooltip-icon" data-tooltip="Your starting principal capital already invested or saved for your long-term wealth engine.">ⓘ</span>
+                        </label>
+                    </div>
+                    <div class="input-control">
+                        <input type="number" id="nestEgg" value="0" min="0" style="width: 100%;">
+                    </div>
+                </div>
+
                 <div class="input-group">
                     <div class="label-row">
                         <label for="escalationPct">Annual Contribution Increase (%)
@@ -665,11 +681,11 @@
                         </label>
                     </div>
                     <div class="input-control">
-                        <input type="number" id="year2Deposit" value="2625" min="0" style="width: 100%;">
+                        <input type="number" id="year2Deposit" value="7875" min="0" style="width: 100%;">
                     </div>
                 </div>
 
-                <div class="input-group full-width">
+                <div class="input-group">
                     <div class="label-row">
                         <label for="marketReturn">Anticipated Annual Return (%)
                             <span class="tooltip-icon" data-tooltip="The historical average annual compound return (~8.7%) of a low-cost broad-market index fund engine.">ⓘ</span>
@@ -766,6 +782,7 @@
     <button class="btn-export" onclick="window.print()">🖨️ Save / Print Wealth Blueprint</button>
     <button class="btn-csv" onclick="downloadCSV()">📥 Download Schedule (CSV)</button>
 
+    <!-- Custom Book Branding Footer -->
     <footer>
         <p>Learn more core wealth strategies in <a href="https://sturgillchad-arch.github.io/wealth-engine-calculator/" target="_blank">STUFF: The Killer of American Wealth</a></p>
     </footer>
@@ -791,11 +808,12 @@
         const retireAgeSlider = document.getElementById('retireAgeSlider');
         const retireAgeBadge = document.getElementById('retireAgeBadge');
 
-        const nestEggInput = document.getElementById('nestEgg');
+        const grossIncomeInput = document.getElementById('grossIncome');
+        const savingsRateInput = document.getElementById('savingsRate');
+        const savingsRateSlider = document.getElementById('savingsRateSlider');
+        const annualDepositOutput = document.getElementById('annualDepositOutput');
 
-        const initialDepositInput = document.getElementById('initialDeposit');
-        const initialDepositSlider = document.getElementById('initialDepositSlider');
-        const monthlyEquivBadge = document.getElementById('monthlyEquivBadge');
+        const nestEggInput = document.getElementById('nestEgg');
 
         const escalationPctInput = document.getElementById('escalationPct');
         const escalationPctSlider = document.getElementById('escalationPctSlider');
@@ -826,11 +844,14 @@
             if (urlParams.has('retire')) retireAgeInput.value = urlParams.get('retire');
             else if (localStorage.getItem('we_retire')) retireAgeInput.value = localStorage.getItem('we_retire');
 
+            if (urlParams.has('income')) grossIncomeInput.value = urlParams.get('income');
+            else if (localStorage.getItem('we_income')) grossIncomeInput.value = localStorage.getItem('we_income');
+
+            if (urlParams.has('rate')) savingsRateInput.value = urlParams.get('rate');
+            else if (localStorage.getItem('we_rate')) savingsRateInput.value = localStorage.getItem('we_rate');
+
             if (urlParams.has('nest')) nestEggInput.value = urlParams.get('nest');
             else if (localStorage.getItem('we_nest')) nestEggInput.value = localStorage.getItem('we_nest');
-
-            if (urlParams.has('deposit')) initialDepositInput.value = urlParams.get('deposit');
-            else if (localStorage.getItem('we_deposit')) initialDepositInput.value = localStorage.getItem('we_deposit');
 
             if (urlParams.has('escalation')) escalationPctInput.value = urlParams.get('escalation');
             else if (localStorage.getItem('we_escalation')) escalationPctInput.value = localStorage.getItem('we_escalation');
@@ -841,7 +862,7 @@
             // Sync sliders to inputs
             currentAgeSlider.value = currentAgeInput.value;
             retireAgeSlider.value = retireAgeInput.value;
-            initialDepositSlider.value = initialDepositInput.value;
+            savingsRateSlider.value = savingsRateInput.value;
             escalationPctSlider.value = escalationPctInput.value;
             marketReturnSlider.value = marketReturnInput.value;
         }
@@ -849,8 +870,9 @@
         function saveToLocalStorage() {
             localStorage.setItem('we_age', currentAgeInput.value);
             localStorage.setItem('we_retire', retireAgeInput.value);
+            localStorage.setItem('we_income', grossIncomeInput.value);
+            localStorage.setItem('we_rate', savingsRateInput.value);
             localStorage.setItem('we_nest', nestEggInput.value);
-            localStorage.setItem('we_deposit', initialDepositInput.value);
             localStorage.setItem('we_escalation', escalationPctInput.value);
             localStorage.setItem('we_return', marketReturnInput.value);
         }
@@ -1043,8 +1065,8 @@
             if (source === 'rAgeSlider') retireAgeInput.value = retireAgeSlider.value;
             if (source === 'rAgeInput') retireAgeSlider.value = retireAgeInput.value;
 
-            if (source === 'initDepSlider') initialDepositInput.value = initialDepositSlider.value;
-            if (source === 'initDepInput') initialDepositSlider.value = initialDepositInput.value;
+            if (source === 'rateSlider') savingsRateInput.value = savingsRateSlider.value;
+            if (source === 'rateInput') savingsRateSlider.value = savingsRateInput.value;
 
             if (source === 'escPctSlider') escalationPctInput.value = escalationPctSlider.value;
             if (source === 'escPctInput') escalationPctSlider.value = escalationPctInput.value;
@@ -1052,25 +1074,30 @@
             if (source === 'retSlider') marketReturnInput.value = marketReturnSlider.value;
             if (source === 'retInput') marketReturnSlider.value = marketReturnInput.value;
 
+            // Calculate Initial Deposit from Gross Income * Savings Rate %
+            let income = parseFloat(grossIncomeInput.value) || 0;
+            let rate = parseFloat(savingsRateInput.value) || 0;
+            let calculatedDeposit = income * (rate / 100);
+            
+            annualDepositOutput.innerText = `${formatCurrency(calculatedDeposit)} / yr`;
+
             // Bi-Directional Logic for Year 2 Deposit vs Escalation %
-            let initDep = parseFloat(initialDepositInput.value) || 0;
             if (source === 'year2Input') {
                 let y2Val = parseFloat(year2DepositInput.value) || 0;
-                if (initDep > 0 && y2Val >= initDep) {
-                    let calcPct = ((y2Val - initDep) / initDep) * 100;
+                if (calculatedDeposit > 0 && y2Val >= calculatedDeposit) {
+                    let calcPct = ((y2Val - calculatedDeposit) / calculatedDeposit) * 100;
                     escalationPctInput.value = calcPct.toFixed(1);
                     escalationPctSlider.value = calcPct.toFixed(1);
                 }
             } else {
                 let escPct = parseFloat(escalationPctInput.value) || 0;
-                let calculatedY2 = initDep * (1 + escPct / 100);
+                let calculatedY2 = calculatedDeposit * (1 + escPct / 100);
                 year2DepositInput.value = Math.round(calculatedY2);
             }
 
             // Update Badges
             currentAgeBadge.innerText = `${currentAgeInput.value} yrs`;
             retireAgeBadge.innerText = `${retireAgeInput.value} yrs`;
-            monthlyEquivBadge.innerText = `${formatCurrency((parseFloat(initialDepositInput.value) || 0) / 12)}/mo`;
 
             saveToLocalStorage();
             calculateEngine();
@@ -1083,7 +1110,10 @@
             const duration = endAge - startAge;
 
             let nestEgg = parseFloat(nestEggInput.value) || 0;
-            let annualDeposit = parseFloat(initialDepositInput.value) || 0;
+            let income = parseFloat(grossIncomeInput.value) || 0;
+            let rate = parseFloat(savingsRateInput.value) || 0;
+            let annualDeposit = income * (rate / 100);
+
             const escPct = (parseFloat(escalationPctInput.value) || 0) / 100;
             const returnRate = (parseFloat(marketReturnInput.value) || 0) / 100;
             const isAdjustedForInflation = inflationToggle.checked;
@@ -1147,7 +1177,7 @@
             heroBalance.innerText = formatCurrency(finalDisplayedBalance);
             let swr4Pct = finalDisplayedBalance * 0.04;
             let monthlyFreedom = formatCurrency(swr4Pct / 12);
-            heroSwr.innerText = `Your starting habit + ${Math.round(escPct*100)}% escalation becomes ${formatCurrency(finalDisplayedBalance)} by Age ${endAge} — ${monthlyFreedom}/mo of freedom`;
+            heroSwr.innerText = `Saving ${rate}% of your $${income.toLocaleString()} salary + ${Math.round(escPct*100)}% escalation becomes ${formatCurrency(finalDisplayedBalance)} by Age ${endAge} — ${monthlyFreedom}/mo of freedom`;
 
             // Table Output
             document.getElementById('scheduleTableBody').innerHTML = tableHTML;
@@ -1209,10 +1239,12 @@
         retireAgeSlider.addEventListener('input', () => syncAndCalculate('rAgeSlider'));
         retireAgeInput.addEventListener('input', () => syncAndCalculate('rAgeInput'));
 
-        nestEggInput.addEventListener('input', () => syncAndCalculate('nestEggInput'));
+        grossIncomeInput.addEventListener('input', () => syncAndCalculate('incomeInput'));
 
-        initialDepositSlider.addEventListener('input', () => syncAndCalculate('initDepSlider'));
-        initialDepositInput.addEventListener('input', () => syncAndCalculate('initDepInput'));
+        savingsRateSlider.addEventListener('input', () => syncAndCalculate('rateSlider'));
+        savingsRateInput.addEventListener('input', () => syncAndCalculate('rateInput'));
+
+        nestEggInput.addEventListener('input', () => syncAndCalculate('nestEggInput'));
 
         escalationPctSlider.addEventListener('input', () => syncAndCalculate('escPctSlider'));
         escalationPctInput.addEventListener('input', () => syncAndCalculate('escPctInput'));
