@@ -1180,7 +1180,7 @@
             calculateEngine();
         }
 
-        // Calculation Engine
+        // Calculation Engine (True to Start Age & Nest Egg Baseline)
         function calculateEngine() {
             const startAge = parseInt(currentAgeInput.value) || 22;
             const endAge = parseInt(retireAgeInput.value) || 62;
@@ -1206,6 +1206,23 @@
 
             currentScheduleData = [];
             let milestoneData = [];
+
+            // Include Starting Baseline Row for Current Age & Nest Egg
+            let displayedStartNestEgg = nestEgg;
+            tableHTML += `
+                <tr>
+                    <td><strong>${startAge} (Start)</strong></td>
+                    <td>-</td>
+                    <td>${formatCurrency(displayedStartNestEgg)}</td>
+                    <td>${formatCurrency(displayedStartNestEgg)}</td>
+                </tr>
+            `;
+            currentScheduleData.push({
+                age: startAge,
+                deposit: 0,
+                principal: Math.round(displayedStartNestEgg),
+                balance: Math.round(displayedStartNestEgg)
+            });
 
             for (let yr = 1; yr <= duration; yr++) {
                 let age = startAge + yr;
