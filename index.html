@@ -1212,7 +1212,7 @@
                 let depositThisYear = 0;
 
                 if (yr === 0) {
-                    depositThisYear = 0; // Starting baseline row
+                    depositThisYear = 0; // Baseline starting row (Current Age with Nest Egg)
                     currentBalance = nestEgg;
                     totalPrincipal = nestEgg;
                 } else if (yr === 1) {
@@ -1251,11 +1251,12 @@
                     balance: Math.round(displayedBalance)
                 });
 
+                let ageDisplay = yr === 0 ? `${age} (Start)` : age;
                 let depositDisplay = yr === 0 ? '-' : formatCurrency(displayedDeposit);
 
                 tableHTML += `
                     <tr>
-                        <td>${age}</td>
+                        <td>${ageDisplay}</td>
                         <td>${depositDisplay}</td>
                         <td>${formatCurrency(displayedPrincipal)}</td>
                         <td>${formatCurrency(displayedBalance)}</td>
