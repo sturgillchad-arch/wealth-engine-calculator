@@ -643,7 +643,6 @@
 
     <div class="grid-container">
 
-        <!-- Card 1: Timeline Parameters -->
         <div class="card">
             <div class="card-header-row">
                 <h2>1. Timeline Parameters</h2>
@@ -676,7 +675,6 @@
             </div>
         </div>
 
-        <!-- Card 2: Income & Savings Rate Engine -->
         <div class="card">
             <div class="card-header-row">
                 <h2>2. Income & Savings Rate</h2>
@@ -707,13 +705,11 @@
             </div>
         </div>
 
-        <!-- Card 3: Acceleration & Growth Mechanics -->
         <div class="card full-width">
             <div class="card-header-row">
                 <h2>3. Acceleration & Growth Mechanics</h2>
             </div>
             
-            <!-- Inflation Toggle Enhancement -->
             <div class="inflation-toggle-container">
                 <div>
                     <label for="inflationToggle">Adjust for Inflation (2.5% / yr)
@@ -856,12 +852,10 @@
     <button class="btn-export" onclick="window.print()">🖨️ Save / Print Wealth Blueprint</button>
     <button class="btn-csv" onclick="downloadCSV()">📥 Download Schedule (CSV)</button>
 
-    <!-- Custom Book Branding Footer -->
     <footer>
         <p>Learn more core wealth strategies in <a href="https://sturgillchad-arch.github.io/wealth-engine-calculator/" target="_blank">STUFF: The Killer of American Wealth</a></p>
     </footer>
 
-    <!-- Fullscreen Modal with Left Rail Context -->
     <div class="chart-modal" id="chartModal">
         <div class="chart-modal-layout">
             <div class="chart-modal-rail">
@@ -1186,7 +1180,7 @@
             calculateEngine();
         }
 
-        // Calculation Engine (Starts Year 1 Deposit on Current Age)
+        // Calculation Engine (True to Start Age & Aligned Timeline)
         function calculateEngine() {
             const startAge = parseInt(currentAgeInput.value) || 22;
             const endAge = parseInt(retireAgeInput.value) || 62;
@@ -1219,8 +1213,6 @@
 
                 if (yr === 0) {
                     depositThisYear = 0;
-                    currentBalance = nestEgg;
-                    totalPrincipal = nestEgg;
                 } else if (yr === 1) {
                     depositThisYear = annualDeposit;
                     totalPrincipal += depositThisYear;
