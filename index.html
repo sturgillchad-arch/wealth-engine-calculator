@@ -1180,7 +1180,7 @@
             calculateEngine();
         }
 
-        // Calculation Engine (True to Start Age & Aligned Timeline)
+        // Calculation Engine (Pristine Financial Ledger: Starts at Current Age with First Deposit)
         function calculateEngine() {
             const startAge = parseInt(currentAgeInput.value) || 22;
             const endAge = parseInt(retireAgeInput.value) || 62;
@@ -1189,7 +1189,7 @@
             let nestEgg = parseFloat(nestEggInput.value) || 0;
             let income = parseFloat(grossIncomeInput.value) || 0;
             let rate = parseFloat(savingsRateInput.value) || 0;
-            let annualDeposit = income * (rate / 100);
+            let baseDeposit = income * (rate / 100);
 
             const escPct = (parseFloat(escalationPctInput.value) || 0) / 100;
             const returnRate = (parseFloat(marketReturnInput.value) || 0) / 100;
@@ -1212,13 +1212,15 @@
                 let depositThisYear = 0;
 
                 if (yr === 0) {
-                    depositThisYear = 0;
+                    depositThisYear = 0; // Starting baseline row
+                    currentBalance = nestEgg;
+                    totalPrincipal = nestEgg;
                 } else if (yr === 1) {
-                    depositThisYear = annualDeposit;
+                    depositThisYear = baseDeposit;
                     totalPrincipal += depositThisYear;
                     currentBalance = (currentBalance + depositThisYear) * (1 + returnRate);
                 } else {
-                    depositThisYear = annualDeposit * Math.pow(1 + escPct, yr - 1);
+                    depositThisYear = baseDeposit * Math.pow(1 + escPct, yr - 1);
                     totalPrincipal += depositThisYear;
                     currentBalance = (currentBalance + depositThisYear) * (1 + returnRate);
                 }
@@ -1227,11 +1229,7 @@
                 let displayedPrincipal = totalPrincipal;
                 let displayedDeposit = depositThisYear;
 
-                if (yr === 0) {
-                    displayedBalance = nestEgg;
-                    displayedPrincipal = nestEgg;
-                    displayedDeposit = 0;
-                } else if (isAdjustedForInflation) {
+                if (isAdjustedForInflation && yr > 0) {
                     let discountFactor = Math.pow(1 + inflationRate, yr);
                     displayedBalance = currentBalance / discountFactor;
                     displayedPrincipal = totalPrincipal / discountFactor;
@@ -1253,12 +1251,11 @@
                     balance: Math.round(displayedBalance)
                 });
 
-                let ageDisplay = yr === 0 ? `${age} (Start)` : age;
                 let depositDisplay = yr === 0 ? '-' : formatCurrency(displayedDeposit);
 
                 tableHTML += `
                     <tr>
-                        <td>${ageDisplay}</td>
+                        <td>${age}</td>
                         <td>${depositDisplay}</td>
                         <td>${formatCurrency(displayedPrincipal)}</td>
                         <td>${formatCurrency(displayedBalance)}</td>
