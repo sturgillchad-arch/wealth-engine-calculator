@@ -313,6 +313,31 @@
             text-align: right;
         }
 
+        /* Separate Nest Egg Callout Box above schedule */
+        .nest-egg-summary-box {
+            background: var(--principal-box-bg);
+            border: 1px solid var(--principal-color);
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nest-egg-summary-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .nest-egg-summary-val {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--principal-color);
+        }
+
         /* Inflation Toggle Styling */
         .inflation-toggle-container {
             display: flex;
@@ -643,7 +668,6 @@
 
     <div class="grid-container">
 
-        <!-- Card 1: Timeline Parameters -->
         <div class="card">
             <div class="card-header-row">
                 <h2>1. Timeline Parameters</h2>
@@ -676,7 +700,6 @@
             </div>
         </div>
 
-        <!-- Card 2: Income & Savings Rate Engine -->
         <div class="card">
             <div class="card-header-row">
                 <h2>2. Income & Savings Rate</h2>
@@ -707,13 +730,11 @@
             </div>
         </div>
 
-        <!-- Card 3: Acceleration & Growth Mechanics -->
         <div class="card full-width">
             <div class="card-header-row">
                 <h2>3. Acceleration & Growth Mechanics</h2>
             </div>
             
-            <!-- Inflation Toggle Enhancement -->
             <div class="inflation-toggle-container">
                 <div>
                     <label for="inflationToggle">Adjust for Inflation (2.5% / yr)
@@ -835,6 +856,10 @@
             <div class="card-header-row">
                 <h2>Annual Accumulation Schedule</h2>
             </div>
+            <div class="nest-egg-summary-box">
+                <div class="nest-egg-summary-title">Starting Nest Egg (Baseline Capital)</div>
+                <div class="nest-egg-summary-val" id="summaryNestEggVal">$0</div>
+            </div>
             <div class="table-wrapper">
                 <table>
                     <thead>
@@ -856,12 +881,10 @@
     <button class="btn-export" onclick="window.print()">🖨️ Save / Print Wealth Blueprint</button>
     <button class="btn-csv" onclick="downloadCSV()">📥 Download Schedule (CSV)</button>
 
-    <!-- Custom Book Branding Footer -->
     <footer>
         <p>Learn more core wealth strategies in <a href="https://sturgillchad-arch.github.io/wealth-engine-calculator/" target="_blank">STUFF: The Killer of American Wealth</a></p>
     </footer>
 
-    <!-- Fullscreen Modal with Left Rail Context -->
     <div class="chart-modal" id="chartModal">
         <div class="chart-modal-layout">
             <div class="chart-modal-rail">
@@ -881,7 +904,7 @@
             <div class="chart-modal-main">
                 <div class="chart-modal-header">
                     <h2 id="modalTitle" style="color: var(--text-main);">Chart Fullscreen View</h2>
-                    <button class="btn-fullscreen" onclick="openFullscreen('line')">✕ Close</button>
+                    <button class="btn-fullscreen" onclick="closeFullscreen()">✕ Close</button>
                 </div>
                 <div class="chart-modal-body" id="modalBody"></div>
             </div>
@@ -908,6 +931,7 @@
         const initialDepositReadout = document.getElementById('initialDepositReadout');
 
         const nestEggInput = document.getElementById('nestEgg');
+        const summaryNestEggVal = document.getElementById('summaryNestEggVal');
 
         const escalationPctInput = document.getElementById('escalationPct');
         const escalationPctSlider = document.getElementById('escalationPctSlider');
@@ -1178,6 +1202,10 @@
             annualDepositOutput.innerText = `${formatCurrency(calculatedDeposit)} / yr`;
             initialDepositReadout.innerText = formatCurrency(calculatedDeposit);
 
+            // Update Nest Egg Summary Box Display
+            let nestEggVal = parseFloat(nestEggInput.value) || 0;
+            summaryNestEggVal.innerText = formatCurrency(nestEggVal);
+
             // Update Badges
             currentAgeBadge.innerText = `${currentAgeInput.value} yrs`;
             retireAgeBadge.innerText = `${retireAgeInput.value} yrs`;
@@ -1186,7 +1214,7 @@
             calculateEngine();
         }
 
-        // Calculation Engine (Clean Financial Ledger: Row 0 = Nest Egg baseline, Row 1+ = Active annual deposits & compounding)
+        // Calculation Engine (Pristine Financial Ledger: Line 1 starts at Current Age with Nest Egg + Annual Deposit compounding)
         function calculateEngine() {
             const startAge = parseInt(currentAgeInput.value) || 22;
             const endAge = parseInt(retireAgeInput.value) || 62;
@@ -1213,36 +1241,27 @@
             currentScheduleData = [];
             let milestoneData = [];
 
-            // Row 0: Starting Baseline (Nest Egg Only)
-            tableHTML += `
-                <tr>
-                    <td><strong>${startAge} (Start)</strong></td>
-                    <td>-</td>
-                    <td>${formatCurrency(nestEgg)}</td>
-                    <td>${formatCurrency(nestEgg)}</td>
-                </tr>
-            `;
-            currentScheduleData.push({
-                age: startAge,
-                deposit: 0,
-                principal: Math.round(nestEgg),
-                balance: Math.round(nestEgg)
-            });
-
-            // Compound active years forward
-            for (let yr = 1; yr <= duration; yr++) {
+            // Loop through each year of active accumulation starting at Current Age
+            for (let yr = 0; yr <= duration; yr++) {
                 let age = startAge + yr;
-                let depositThisYear = yr === 1 ? baseDeposit : baseDeposit * Math.pow(1 + escPct, yr - 1);
-                
-                totalPrincipal += depositThisYear;
-                currentBalance = (currentBalance + depositThisYear) * (1 + returnRate);
+                let depositThisYear = 0;
+
+                if (yr === 0) {
+                    depositThisYear = baseDeposit;
+                    totalPrincipal += depositThisYear;
+                    currentBalance = (nestEgg + depositThisYear) * (1 + returnRate);
+                } else {
+                    depositThisYear = baseDeposit * Math.pow(1 + escPct, yr);
+                    totalPrincipal += depositThisYear;
+                    currentBalance = (currentBalance + depositThisYear) * (1 + returnRate);
+                }
 
                 let displayedBalance = currentBalance;
                 let displayedPrincipal = totalPrincipal;
                 let displayedDeposit = depositThisYear;
 
                 if (isAdjustedForInflation) {
-                    let discountFactor = Math.pow(1 + inflationRate, yr);
+                    let discountFactor = Math.pow(1 + inflationRate, yr + 1);
                     displayedBalance = currentBalance / discountFactor;
                     displayedPrincipal = totalPrincipal / discountFactor;
                     displayedDeposit = depositThisYear / discountFactor;
@@ -1316,14 +1335,15 @@
 
             // Dynamic Proportional Milestones
             if (milestoneData.length > 0) {
-                let idx1 = Math.floor(duration * 0.25) - 1;
-                let idx2 = Math.floor(duration * 0.50) - 1;
-                let idx3 = Math.floor(duration * 0.75) - 1;
-                let idx4 = duration - 1;
+                let idx1 = Math.floor(duration * 0.25);
+                let idx2 = Math.floor(duration * 0.50);
+                let idx3 = Math.floor(duration * 0.75);
+                let idx4 = duration;
 
-                idx1 = Math.max(0, idx1);
-                idx2 = Math.max(0, idx2);
-                idx3 = Math.max(0, idx3);
+                idx1 = Math.min(Math.max(0, idx1), milestoneData.length - 1);
+                idx2 = Math.min(Math.max(0, idx2), milestoneData.length - 1);
+                idx3 = Math.min(Math.max(0, idx3), milestoneData.length - 1);
+                idx4 = Math.min(Math.max(0, idx4), milestoneData.length - 1);
 
                 document.getElementById('m1-age').innerText = `Age ${milestoneData[idx1].age}`;
                 document.getElementById('m1-val').innerText = formatCurrency(milestoneData[idx1].balance);
