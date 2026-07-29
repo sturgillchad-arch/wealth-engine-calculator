@@ -1181,6 +1181,7 @@
         }
 
         // Calculation Engine (True to Start Age & Nest Egg Baseline)
+        // Calculation Engine (Aligned so Year 1 deposit displays on Current Age)
         function calculateEngine() {
             const startAge = parseInt(currentAgeInput.value) || 22;
             const endAge = parseInt(retireAgeInput.value) || 62;
@@ -1207,46 +1208,44 @@
             currentScheduleData = [];
             let milestoneData = [];
 
-            // Baseline Row (Current Age & Starting Nest Egg)
-            tableHTML += `
-                <tr>
-                    <td><strong>${startAge} (Start)</strong></td>
-                    <td>-</td>
-                    <td>${formatCurrency(nestEgg)}</td>
-                    <td>${formatCurrency(nestEgg)}</td>
-                </tr>
-            `;
-            currentScheduleData.push({
-                age: startAge,
-                deposit: 0,
-                principal: Math.round(nestEgg),
-                balance: Math.round(nestEgg)
-            });
-
-            // Active Compounding Years
-            for (let yr = 1; yr <= duration; yr++) {
+            for (let yr = 0; yr <= duration; yr++) {
                 let age = startAge + yr;
-                let depositThisYear = yr === 1 ? annualDeposit : annualDeposit * Math.pow(1 + escPct, yr - 1);
                 
-                totalPrincipal += depositThisYear;
-                currentBalance = (currentBalance + depositThisYear) * (1 + returnRate);
+                // For the starting year (yr = 0), use existing nest egg baseline
+                let depositThisYear = 0;
+                if (yr === 0) {
+                    depositThisYear = 0;
+                } else if (yr === 1) {
+                    depositThisYear = annualDeposit;
+                    totalPrincipal += depositThisYear;
+                    currentBalance = (currentBalance + depositThisYear) * (1 + returnRate);
+                } else {
+                    depositThisYear = annualDeposit * Math.pow(1 + escPct, yr - 1);
+                    totalPrincipal += depositThisYear;
+                    currentBalance = (currentBalance + depositThisYear) * (1 + returnRate);
+                }
 
-                // Apply inflation discount factor if toggled on
                 let displayedBalance = currentBalance;
                 let displayedPrincipal = totalPrincipal;
                 let displayedDeposit = depositThisYear;
-                if (isAdjustedForInflation) {
+
+                if (yr === 0) {
+                    displayedBalance = nestEgg;
+                    displayedPrincipal = nestEgg;
+                    displayedDeposit = 0;
+                } else if (isAdjustedForInflation) {
                     let discountFactor = Math.pow(1 + inflationRate, yr);
                     displayedBalance = currentBalance / discountFactor;
                     displayedPrincipal = totalPrincipal / discountFactor;
                     displayedDeposit = depositThisYear / discountFactor;
                 }
 
-                labels.push(`Age ${age}`);
-                balanceHistory.push(Math.round(displayedBalance));
-                principalHistory.push(Math.round(displayedPrincipal));
-
-                milestoneData.push({ age: age, balance: displayedBalance });
+                if (yr > 0) {
+                    labels.push(`Age ${age}`);
+                    balanceHistory.push(Math.round(displayedBalance));
+                    principalHistory.push(Math.round(displayedPrincipal));
+                    milestoneData.push({ age: age, balance: displayedBalance });
+                }
 
                 // Store raw numbers for CSV export
                 currentScheduleData.push({
@@ -1256,10 +1255,13 @@
                     balance: Math.round(displayedBalance)
                 });
 
+                let ageDisplay = yr === 0 ? `${age} (Start)` : age;
+                let depositDisplay = yr === 0 ? '-' : formatCurrency(displayedDeposit);
+
                 tableHTML += `
                     <tr>
-                        <td>${age}</td>
-                        <td>${formatCurrency(displayedDeposit)}</td>
+                        <td>${ageDisplay}</td>
+                        <td>${depositDisplay}</td>
                         <td>${formatCurrency(displayedPrincipal)}</td>
                         <td>${formatCurrency(displayedBalance)}</td>
                     </tr>
@@ -1333,6 +1335,7 @@
                 document.getElementById('m4-val').innerText = formatCurrency(milestoneData[idx4].balance);
             }
         }
+       
 
         // Event Listeners
         currentAgeSlider.addEventListener('input', () => syncAndCalculate('cAgeSlider'));
