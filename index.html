@@ -643,6 +643,7 @@
 
     <div class="grid-container">
 
+        <!-- Card 1: Timeline Parameters -->
         <div class="card">
             <div class="card-header-row">
                 <h2>1. Timeline Parameters</h2>
@@ -675,6 +676,7 @@
             </div>
         </div>
 
+        <!-- Card 2: Income & Savings Rate Engine -->
         <div class="card">
             <div class="card-header-row">
                 <h2>2. Income & Savings Rate</h2>
@@ -705,11 +707,13 @@
             </div>
         </div>
 
+        <!-- Card 3: Acceleration & Growth Mechanics -->
         <div class="card full-width">
             <div class="card-header-row">
                 <h2>3. Acceleration & Growth Mechanics</h2>
             </div>
             
+            <!-- Inflation Toggle Enhancement -->
             <div class="inflation-toggle-container">
                 <div>
                     <label for="inflationToggle">Adjust for Inflation (2.5% / yr)
@@ -852,10 +856,12 @@
     <button class="btn-export" onclick="window.print()">🖨️ Save / Print Wealth Blueprint</button>
     <button class="btn-csv" onclick="downloadCSV()">📥 Download Schedule (CSV)</button>
 
+    <!-- Custom Book Branding Footer -->
     <footer>
         <p>Learn more core wealth strategies in <a href="https://sturgillchad-arch.github.io/wealth-engine-calculator/" target="_blank">STUFF: The Killer of American Wealth</a></p>
     </footer>
 
+    <!-- Fullscreen Modal with Left Rail Context -->
     <div class="chart-modal" id="chartModal">
         <div class="chart-modal-layout">
             <div class="chart-modal-rail">
@@ -1180,8 +1186,7 @@
             calculateEngine();
         }
 
-        // Calculation Engine (True to Start Age & Nest Egg Baseline)
-        // Calculation Engine (Aligned so Year 1 deposit displays on Current Age)
+        // Calculation Engine (Starts Year 1 Deposit on Current Age)
         function calculateEngine() {
             const startAge = parseInt(currentAgeInput.value) || 22;
             const endAge = parseInt(retireAgeInput.value) || 62;
@@ -1210,11 +1215,12 @@
 
             for (let yr = 0; yr <= duration; yr++) {
                 let age = startAge + yr;
-                
-                // For the starting year (yr = 0), use existing nest egg baseline
                 let depositThisYear = 0;
+
                 if (yr === 0) {
                     depositThisYear = 0;
+                    currentBalance = nestEgg;
+                    totalPrincipal = nestEgg;
                 } else if (yr === 1) {
                     depositThisYear = annualDeposit;
                     totalPrincipal += depositThisYear;
@@ -1335,7 +1341,6 @@
                 document.getElementById('m4-val').innerText = formatCurrency(milestoneData[idx4].balance);
             }
         }
-       
 
         // Event Listeners
         currentAgeSlider.addEventListener('input', () => syncAndCalculate('cAgeSlider'));
